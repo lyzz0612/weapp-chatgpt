@@ -53,7 +53,7 @@ async function sleep(ms) {
 }
 router.post('/message/post', async ctx => {
   const { ToUserName, FromUserName, Content, CreateTime } = ctx.request.body;
-  console.log(FromUserName, Content
+  console.log(FromUserName, Content)
   const response = await Promise.race([
     // 3秒微信服务器就会超时，超过2.9秒要提示用户重试
     sleep(900).then(() => "我要再想一下，您待会再问可以吗？"),
