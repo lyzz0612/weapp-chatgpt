@@ -20,7 +20,6 @@ async function getAIResponse(prompt) {
   let ans = await Answer.findOne({
     where: {question: prompt}
   })
-  console.log("getAIResponse findOne", ans)
   if(ans) {
     return ans.answer;
   }
@@ -38,7 +37,6 @@ async function getAIResponse(prompt) {
         answer: completion.data.choices[0].text
       }
       await Answer.create(qa);
-      console.log("getAIResponse Answer.create", qa)
     }
     return (completion?.data?.choices?.[0].text || '我听不懂呢，请换个问题').trim();
   } catch(e) {
@@ -51,12 +49,11 @@ async function sleep(ms) {
     setTimeout(resolve, ms);
   }) 
 }
-router.post('/message/post', async ctx => {
+router.post('/message', async ctx => {
   const { ToUserName, FromUserName, Content, CreateTime } = ctx.request.body;
-  console.log(FromUserName, Content)
   const response = await Promise.race([
     // 3秒微信服务器就会超时，超过2.9秒要提示用户重试
-    sleep(900).then(() => "我要再想一下，您待会再问可以吗？"),
+    sleep(2900).then(() => "我要再想一下，您待会再问可以吗？"),
     getAIResponse(Content ),
   ]);
   console.log("response", response)
