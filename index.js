@@ -16,26 +16,36 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 async function getAIResponse(prompt) {
+  console.log("getAIResponse", prompt)
   let ans = await Answer.findOne({
     where: {question: prompt}
   })
+  console.log("getAIResponse findOne", ans)
+  console.log(FromUserName, Content)
   if(ans) {
     return ans.answer;
   }
-  const completion = await openai.createCompletion({
-    model: 'text-davinci-003',
-    prompt,
-    max_tokens: 1024,
-    temperature: 0.1,
-  });
-  if(completion?.data?.choices) {    
-    const qa = {
-      question: prompt,
-      answer: completion.data.choices[0].text
+  try{
+    const completion = await openai.createCompletion({
+      model: 'text-davinci-003',
+      prompt,
+      max_tokens: 1024,
+      temperature: 0.1,
+    });
+    console.log("getAIResponse completion", completion)
+    if(completion?.data?.choices) {    
+      const qa = {
+        question: prompt,
+        answer: completion.data.choices[0].text
+      }
+      await Answer.create(qa);
+      console.log("getAIResponse Answer.create", qa)
     }
-    await Answer.create(qa);
+    return (completion?.data?.choices?.[0].text || '我听不懂呢，请换个问题').trim();
+  } catch(e) {
+    console.log("createCompletion error", e)
+    return ('好像哪里出问题了').trim();
   }
-  return (completion?.data?.choices?.[0].text || '我听不懂呢，请换个问题').trim();
 }
 async function sleep(ms) {
   return new Promise((resolve) => {
@@ -44,11 +54,11 @@ async function sleep(ms) {
 }
 router.post('/message/post', async ctx => {
   const { ToUserName, FromUserName, Content, CreateTime } = ctx.request.body;
-
+  console.log(FromUserName, Content)
   const response = await getAIResponse(Content); 
   const message = await Promise.race([
     // 3秒微信服务器就会超时，超过2.9秒要提示用户重试
-    sleep(2900).then(() => "我要再想一下，您待会再问可以吗？"),
+    sleep(900).then(() => "我要再想一下，您待会再问可以吗？"),
     getAIResponse(Content, FromUserName ),
   ]);
   
@@ -59,12 +69,6 @@ router.post('/message/post', async ctx => {
     MsgType: 'text',
     
     Content: response,
-  };
-});
-router.post('/create_chatdb', async ctx => {  
-  let result = await Answer.create();  
-  ctx.body = {
-    Result: `${result}`,
   };
 });
 // 一个用户发什么消息，就反弹什么消息的消息回复功能
