@@ -22,12 +22,12 @@ const Counter = sequelize.define("Counter", {
 // 定义数据模型
 const Answer = sequelize.define("Answer", {
   question: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: false,
     defaultValue: "",
   },
   answer: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     defaultValue: "",
   },
 });
