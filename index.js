@@ -4,7 +4,7 @@ const logger = require("koa-logger");
 const bodyParser = require("koa-bodyparser");
 const fs = require("fs");
 const path = require("path");
-const { init: initDB, Counter } = require("./db");
+const { init: initDB, Counter, Answer } = require("./db");
 const { Configuration, OpenAIApi } = require("openai");
 
 const router = new Router();
@@ -16,19 +16,41 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 async function getAIResponse(prompt) {
+  let ans = await Answer.findOne({
+    where: {question: prompt}
+  })
+  if(ans) {
+    return ans.answer;
+  }
   const completion = await openai.createCompletion({
     model: 'text-davinci-003',
     prompt,
     max_tokens: 1024,
     temperature: 0.1,
   });
-  return (completion?.data?.choices?.[0].text || 'AI 挂了').trim();
+  if(completion?.data?.choices) {    
+    const qa = {
+      question: prompt,
+      answer: completion.data.choices[0].text
+    }
+    await Answer.create(qa);
+  }
+  return (completion?.data?.choices?.[0].text || '我听不懂呢，请换个问题').trim();
 }
-
+async function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  }) 
+}
 router.post('/message/post', async ctx => {
   const { ToUserName, FromUserName, Content, CreateTime } = ctx.request.body;
 
-  const response = await getAIResponse(Content);
+  const response = await getAIResponse(Content); 
+  const message = await Promise.race([
+    // 3秒微信服务器就会超时，超过2.9秒要提示用户重试
+    sleep(2900).then(() => "我要再想一下，您待会再问可以吗？"),
+    getAIResponse(Content, FromUserName ),
+  ]);
   
   ctx.body = {
     ToUserName: FromUserName,
