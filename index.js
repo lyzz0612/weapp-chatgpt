@@ -61,6 +61,12 @@ router.post('/message/post', async ctx => {
     Content: response,
   };
 });
+router.post('/create_chatdb', async ctx => {  
+  let result = await Answer.create();  
+  ctx.body = {
+    Result: `${result}`,
+  };
+});
 // 一个用户发什么消息，就反弹什么消息的消息回复功能
 router.post('/echo', async ctx => {
   const { ToUserName, FromUserName, Content, CreateTime } = ctx.request.body;
@@ -73,7 +79,6 @@ router.post('/echo', async ctx => {
     Content: `你发的消息：${Content}`,
   };
 });
-
 // 首页
 router.get("/", async (ctx) => {
   ctx.body = homePage;
