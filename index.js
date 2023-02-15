@@ -21,7 +21,6 @@ async function getAIResponse(prompt) {
     where: {question: prompt}
   })
   console.log("getAIResponse findOne", ans)
-  console.log(FromUserName, Content)
   if(ans) {
     return ans.answer;
   }
@@ -54,14 +53,13 @@ async function sleep(ms) {
 }
 router.post('/message/post', async ctx => {
   const { ToUserName, FromUserName, Content, CreateTime } = ctx.request.body;
-  console.log(FromUserName, Content)
-  const response = await getAIResponse(Content); 
-  const message = await Promise.race([
+  console.log(FromUserName, Content
+  const response = await Promise.race([
     // 3秒微信服务器就会超时，超过2.9秒要提示用户重试
     sleep(900).then(() => "我要再想一下，您待会再问可以吗？"),
-    getAIResponse(Content, FromUserName ),
+    getAIResponse(Content ),
   ]);
-  
+  console.log("response", response)
   ctx.body = {
     ToUserName: FromUserName,
     FromUserName: ToUserName,
