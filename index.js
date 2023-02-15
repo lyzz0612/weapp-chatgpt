@@ -39,6 +39,18 @@ router.post('/message/post', async ctx => {
     Content: response,
   };
 });
+// 一个用户发什么消息，就反弹什么消息的消息回复功能
+router.post('/echo', async ctx => {
+  const { ToUserName, FromUserName, Content, CreateTime } = ctx.request.body;
+  console.log(ToUserName, FromUserName, Content, CreateTime);
+  ctx.body = {
+    ToUserName: FromUserName,
+    FromUserName: ToUserName,
+    CreateTime: +new Date(),
+    MsgType: 'text',
+    Content: `你发的消息：${Content}`,
+  };
+});
 
 // 首页
 router.get("/", async (ctx) => {
