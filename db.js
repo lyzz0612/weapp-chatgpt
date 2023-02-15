@@ -19,6 +19,18 @@ const Counter = sequelize.define("Counter", {
     defaultValue: 1,
   },
 });
+// 定义数据模型
+const Answer = sequelize.define("Answer", {
+  question: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: "",
+  },
+  answer: {
+    type: DataTypes.STRING,
+    defaultValue: "",
+  },
+});
 
 // 数据库初始化方法
 async function init() {
