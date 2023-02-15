@@ -12,7 +12,6 @@ const router = new Router();
 const homePage = fs.readFileSync(path.join(__dirname, "index.html"), "utf-8");
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
-  //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
 });
 const openai = new OpenAIApi(configuration);
 
@@ -50,12 +49,11 @@ async function sleep(ms) {
     setTimeout(resolve, ms);
   }) 
 }
-router.post('/message/post', async ctx => {
+router.post('/message', async ctx => {
   const { ToUserName, FromUserName, Content, CreateTime } = ctx.request.body;
   const response = await Promise.race([
-    // 3秒微信服务器就会超时，超过2.9秒要提示用户重试
-    sleep(2900).then(() => "我要再想一下，您待会再问可以吗？"),
-    getAIResponse(Content ),
+    sleep(process.env.REQUEST_TIMEOUT).then(() => "我要再想一下，您待会再问可以吗？"),
+    getAIResponse(Content),
   ]);
   console.log("response", response)
   ctx.body = {
@@ -78,7 +76,7 @@ router.post('/drop_chatdb', async ctx => {
 });
 
 // 一个用户发什么消息，就反弹什么消息的消息回复功能
-router.post('/message', async ctx => {
+router.post('/echo', async ctx => {
   const { ToUserName, FromUserName, Content, CreateTime } = ctx.request.body;
   console.log(ToUserName, FromUserName, Content, CreateTime);
   ctx.body = {
