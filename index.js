@@ -11,7 +11,7 @@ const router = new Router();
 
 const homePage = fs.readFileSync(path.join(__dirname, "index.html"), "utf-8");
 const configuration = new Configuration({
-  apiKey: "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",
+  apiKey: "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",
 });
 const openai = new OpenAIApi(configuration);
 
